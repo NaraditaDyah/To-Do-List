@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Todo;
 use Illuminate\Http\Request;
+use Carbon\Carbon;   
 
 class TodoController extends Controller
 {
@@ -11,7 +12,20 @@ class TodoController extends Controller
     public function index()
     {
         $todos = Todo::orderBy('deadline', 'asc')->get();
-        return view('todo', compact('todos'));
+        $pageTitle = "All Tasks"; // Untuk penanda judul halaman
+        return view('todo', compact('todos', 'pageTitle'));
+    }
+
+    public function today()
+    {
+        // Mengambil tanggal hari ini dengan format YYYY-MM-DD
+        $todayDate = Carbon::today()->toDateString();
+
+        // Filter tugas yang deadlinenya hari ini
+        $todos = Todo::whereDate('deadline', $todayDate)->orderBy('created_at', 'desc')->get();
+        $pageTitle = "Today's Task";
+
+        return view('todo', compact('todos', 'pageTitle'));
     }
 
     // 2. Menyimpan tugas baru tanpa memasukkan user_id
@@ -53,7 +67,7 @@ class TodoController extends Controller
 
         $todo = Todo::findOrFail($id);
         $todo->update($request->all());
-        
+
         return redirect()->back()->with('success', 'Tugas berhasil diperbarui!');
     }
 
@@ -62,7 +76,7 @@ class TodoController extends Controller
     {
         $todo = Todo::findOrFail($id);
         $todo->delete();
-        
+
         return redirect()->back()->with('success', 'Tugas berhasil dihapus!');
     }
 }
